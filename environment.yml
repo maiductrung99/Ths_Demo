@@ -1,9 +1,0 @@
-name: streamlit-app-env
-channels:
-- conda-forge
-dependencies
-- python=3.8
-- streamlit
-- opencv
-- dlib
-- numpy
