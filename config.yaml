@@ -1,0 +1,78 @@
+project_name: student engagement multiple tools and application
+# Config detection
+# Config yolo
+yolo:
+  imgsz: 640
+  conf: 0.25
+  iou: 0.65
+  max_det: 300
+  classes: [0]
+  device: ''
+######################################################################################################################################
+# Config tracker
+
+# Config DeepSort
+deep_sort:
+  max_iou_distance: 0.7 
+  max_age: 10           # Maximum number of missed misses before a track is deleted.
+  n_init: 3             # Number of frames that a track remains in initialization phase.
+  max_dist: 0.2
+  nn_budget: 100
+  embedder: torchreid   # mobilenet or torchreid
+  embedder_model_name : osnet_x0_25
+  embedder_wts : C:\Users\hieux\Desktop\Personal\Master\PROJECT\osnet_x0_25.pth
+#---------------------------------------------------------------------------------------------------------------------------------------
+# Config Strong Sort
+strong_sort:
+  fp16: False                 # updates  appearance  state in  an exponential moving average manner
+  device: cuda
+  max_dist: 0.2               # The matching threshold. Samples with larger distance are considered an invalid match
+  max_iou_distance: 0.7       # Gating threshold. Associations with cost larger than this value are disregarded.
+  max_age: 30                 # Maximum number of missed misses before a track is deleted
+  n_init: 3                   # Number of frames that a track remains in initialization phase
+  nn_budget: 100              # Maximum size of the appearance descriptors gallery
+  embedder_model_name: osnet_x0_25
+  embedder_wts: C:\Users\hieux\Desktop\Personal\Master\PROJECT\osnet_x0_25.pt
+#---------------------------------------------------------------------------------------------------------------------------------------
+# Config Byte Track
+byte_track:
+  tracker_type: bytetrack      # tracker type, ['botsort', 'bytetrack']
+  track_high_thresh: 0.25      # threshold for the first association
+  track_low_thresh: 0.1        # threshold for the second association
+  new_track_thresh: 0.25       # threshold for init new track if the detection does not match any tracks
+  track_buffer: 30             # buffer to calculate the time when to remove tracks = max_age
+  match_thresh: 0.8            # threshold for matching tracks = max_iou_distance
+  fuse_score: True             # Whether to fuse confidence scores with the iou distances before matching
+  n_init: 1             # Whether to fuse confidence scores with the iou distances before matching
+
+#########################################################################################################################################
+
+# Config facial
+feat-fy:
+  face_model : img2pose
+  landmark_model : mobilefacenet
+  au_model : xgb
+  emotion_model : resmasknet
+  facepose_model : img2pose
+  identity_model : facenet
+
+#########################################################################################################################################
+# Config feature extraction
+feature-extraction:
+  model_name : osnet_x0_25
+  model_wts_path : C:\\Users\\hieux\\Desktop\\Personal\\Master\\PROJECT\\osnet_x0_25.pth
+  model_weight : C:\Users\hieux\Desktop\Personal\Master\PROJECT\osnet_x0_25.pt
+
+#########################################################################################################################################
+# Config comparative
+# Metric is: 'euclidean' or 'cosine'
+
+comparative:
+  metric : cosine
+  distance_match : 0.2
+
+#########################################################################################################################################
+# Config body pose
+body-pose:
+  model_type : body_25
+  model_path : body_pose\\openposeBodyCustom\\model\\body_25.pth
