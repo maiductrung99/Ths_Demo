@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 from ultralytics import YOLO
-
+import face_recognition
 import os
 import time
 import cv2 
@@ -15,8 +15,24 @@ st.title("Image processing demo")
 def load_model():
     return YOLO("yolo11s.pt")
 
-
+known_encodings = []
+known_names = []
 detect_model = load_model()
+
+def load_student_encodings(folder="Student"):
+    known_encodings, known_names = [], []
+    for filename in os.listdir(folder):
+        path = os.path.join(folder, filename)
+        img = face_recognition.load_image_file(path)
+        face_zone = face_recognition.face_locations(img)
+        encodings = face_recognition.face_encodings(img, face_zone)
+        if encodings:
+            known_encodings.append(encodings[0])
+            name = os.path.splitext(filename)[0]
+            known_names.append(name)
+    return known_encodings, known_names
+
+known_encodings, known_names = load_student_encodings()
 
 def remove_nested_boxes(boxes, threshold=0.8):
     """
@@ -25,14 +41,14 @@ def remove_nested_boxes(boxes, threshold=0.8):
     """
     keep = []
     for i, boxA in enumerate(boxes):
-        x1A, y1A, x2A, y2A, confA, clsA = boxA
+        x1A, y1A, x2A, y2A, confA, clsA, distanceA = boxA
         areaA = (x2A - x1A) * (y2A - y1A)
         nested = False
 
         for j, boxB in enumerate(boxes):
             if i == j:
                 continue
-            x1B, y1B, x2B, y2B, confB, clsB = boxB
+            x1B, y1B, x2B, y2B, confB, clsB, distanceB = boxB
 
             # Intersection
             inter_x1 = max(x1A, x1B)
@@ -78,14 +94,22 @@ if uploaded_file is not None:
     for box in result.boxes:
         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().astype(int)
         conf = float(box.conf[0])
-        cls = int(box.cls[0])
-        boxes.append((x1, y1, x2, y2, conf, cls))
+        person_crop = img_array[y1:y2, x1:x2]
+        face_locations = face_recognition.face_locations(person_crop)
+        face_encodings = face_recognition.face_encodings(person_crop,face_locations)
+        name = "Unknown"
+        for face_encoding in face_encodings:
+            face_distances = face_recognition.face_distance(known_encodings,face_encoding)
+            best_match_index = np.argmin(face_distances)
+            if (face_distances[best_match_index] and face_distances[best_match_index] < 0.25):
+                name = known_names[best_match_index]
+        boxes.append((x1, y1, x2, y2, conf, name, face_distances[best_match_index]))
     filtered_boxes = remove_nested_boxes(boxes, threshold=0.9)
     #draw
     processed_array = img_array.copy()
-    for (x1, y1, x2, y2, conf, cls) in filtered_boxes:
+    for (x1, y1, x2, y2, conf, name, distance) in filtered_boxes:
         cv2.rectangle(processed_array, (x1, y1), (x2, y2), (0, 0, 255), 2)
-        cv2.putText(processed_array, f"{conf:.2f}", (x1, max(y1-10,0)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 2)
+        cv2.putText(processed_array, f"{name}", (x1, max(y1-10,0)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
     #result
     processed_image = Image.fromarray(processed_array)
 
