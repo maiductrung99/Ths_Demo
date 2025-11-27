@@ -1,5 +1,5 @@
 streamlit
-face-recognition
 opencv-python
 numpy
 ultralytics
+
