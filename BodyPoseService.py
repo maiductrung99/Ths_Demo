@@ -15,8 +15,8 @@ class BodyPoseService:
 
   def __init__(self):
     loadConfig = config.yaml_load().get("body-pose")
-    model_type = loadConfig['model_type']
-    model_path = loadConfig['model_path']
+    model_type = "body_25"
+    model_path = "body_25.pth"
     self.model = torch_openpose.torch_openpose(model_type=model_type,
                                        model_path=model_path)
   """
