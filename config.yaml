@@ -60,8 +60,8 @@ feat-fy:
 # Config feature extraction
 feature-extraction:
   model_name : osnet_x0_25
-  model_wts_path : C:\\Users\\hieux\\Desktop\\Personal\\Master\\PROJECT\\osnet_x0_25.pth
-  model_weight : C:\Users\hieux\Desktop\Personal\Master\PROJECT\osnet_x0_25.pt
+  model_wts_path : osnet_x0_25.pth
+  model_weight : osnet_x0_25.pt
 
 #########################################################################################################################################
 # Config comparative
