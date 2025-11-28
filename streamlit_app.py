@@ -10,6 +10,7 @@ import keras
 import numpy as np
 import pandas as pd
 import BodyPoseService as bps
+import FacialService as fs
 st.title("Image processing demo")
 
 @st.cache_resource
@@ -70,10 +71,13 @@ def remove_nested_boxes(boxes, threshold=0.8):
             keep.append(boxA)
     return keep
 
+facialModel = fs.FacialService()
 bodyPoseModel = bps.BodyPoseService()
 
-def handle_facial_body_process(person_crop,model_body):
+def handle_facial_body_process(person_crop,model_facial,model_body):
+    resultFacial = model_facial.extractionFactial(person_crop)
     resultPoseBody = model_body.extractionBodyPose(person_crop)
+    combined = pd.concat([resultPoseBody,resultFacial], axis=1)
     return resultPoseBody
 #1 Get the files
 uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
@@ -102,7 +106,8 @@ if uploaded_file is not None:
         conf = float(box.conf[0])
         person_crop = img_array[y1:y2, x1:x2]
         #feature extraction
-        feature = handle_facial_body_process(person_crop,bodyPoseModel)
+        features = handle_facial_body_process(person_crop,facialModel,bodyPoseModel)
+        print(features)
         #face recognition
         face_locations = face_recognition.face_locations(person_crop)
         face_encodings = face_recognition.face_encodings(person_crop,face_locations)
